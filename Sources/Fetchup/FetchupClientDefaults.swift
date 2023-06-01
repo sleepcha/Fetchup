@@ -16,7 +16,7 @@ public struct FetchupClientDefaults {
     let baseURL: URL?
     let manualCaching: Bool
     
-    init(baseURL: URL? = nil, manualCaching: Bool = false) {
+    public init(baseURL: URL? = nil, manualCaching: Bool = false) {
         self.baseURL = baseURL
         self.manualCaching = manualCaching
     }
