@@ -40,7 +40,7 @@ public extension APIResource {
 
 
 /// Default decoding implementation for JSON responses
-private extension APIResource where Response: Decodable {
+public extension APIResource where Response: Decodable {
     func decode(_ data: Data) -> ResultResponse {
         return data.decoded(as: Response.self)
     }
