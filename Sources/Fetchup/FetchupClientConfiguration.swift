@@ -1,5 +1,5 @@
 //
-//  FetchupClientDefaults.swift
+//  FetchupClientConfiguration.swift
 //  TinkoffStocks
 //
 //  Created by Jacob Chase on 3/7/23.
@@ -8,11 +8,11 @@
 import Foundation
 
 
-/// Contains the default parameters for each request from a client.
+/// A structure used to initialize Fetchup client.
 ///
 /// `baseURL` will be concatenated with the endpoint path.
 /// If `manualCaching` is set to `true` no requests will be cached using URLCache except those that have a non-nil `expirationDate` property.
-public struct FetchupClientDefaults {
+public struct FetchupClientConfiguration {
     let baseURL: URL?
     let manualCaching: Bool
     

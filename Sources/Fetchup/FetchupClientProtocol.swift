@@ -9,7 +9,7 @@ import Foundation
 
 
 public protocol FetchupClientProtocol {
-    var defaults: FetchupClientDefaults { get }
+    var configuration: FetchupClientConfiguration { get }
     var session: URLSession { get }
 }
 
@@ -18,11 +18,11 @@ public extension FetchupClientProtocol {
     
     /// Asynchronously fetches a REST resource declared in ``APIResource`` using `URLSession` and returns the result in a completion handler.
     ///
-    /// The method uses ``FetchupClientDefaults/manualCaching`` to tell whether the client opts to use manual (aggresive) caching.
+    /// The method uses ``FetchupClientConfiguration/manualCaching`` to tell whether the client opts to use manual (aggresive) caching.
     ///
     ///  - Parameters:
     ///     - resource: An instance that contains the data for generating a request.
-    ///     - expirationDate: Ignore if `defaults.manualCaching` is set to false. If not nil, the response will be aggressively cached with the provided expiration date.
+    ///     - expirationDate: Ignore if `configuration.manualCaching` is set to false. If not nil, the response will be aggressively cached with the provided expiration date.
     ///     - completion: A completion handler that passes a model object of type `Response` (decodable type declared in `resource`) in case of `.success`.
     ///     Otherwise `.failure(Error)` is passed.
     func fetchDataTask<T: APIResource>(
@@ -33,16 +33,16 @@ public extension FetchupClientProtocol {
         let request = generateURLRequest(for: resource)
         let task = session.dataTask(with: request)
         
-        task.delegate = FetchupClientTaskDelegate(manualCaching: defaults.manualCaching, expirationDate: expirationDate) {
+        task.delegate = FetchupClientTaskDelegate(manualCaching: configuration.manualCaching, expirationDate: expirationDate) {
             completion($0.flatMap(resource.decode))
         }
         
         return task
     }
     
-    /// Returns or invalidates a cached version of resource depending on its expiration. Will always return nil if ``FetchupClientDefaults/manualCaching`` is set to false.
+    /// Returns or invalidates a cached version of resource depending on its expiration. Will always return nil if ``FetchupClientConfiguration/manualCaching`` is set to false.
     func cached<T: APIResource>(_ resource: T) -> T.ResultResponse? {
-        guard defaults.manualCaching else { return nil }
+        guard configuration.manualCaching else { return nil }
         let request = generateURLRequest(for: resource).withGETMethod
         
         guard let cache = session.configuration.urlCache,
@@ -67,7 +67,7 @@ public extension FetchupClientProtocol {
     
     private func generateURLRequest(for resource: some APIResource) -> URLRequest {
         let queryItems = resource.queryParameters.map { URLQueryItem(name: $0, valueForPercentEncoding: $1) }
-        var url = resource.endpoint.relative(to: defaults.baseURL)
+        var url = resource.endpoint.relative(to: configuration.baseURL)
         
         if !queryItems.isEmpty {
             if #available(iOS 16.0, macOS 13.0, *) {
