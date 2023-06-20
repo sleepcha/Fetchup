@@ -16,7 +16,7 @@ class SomeAPIClient: FetchupClientProtocol {
 ```
 
 
-Define a resource containing the endpoint and `Decodable` types for JSON response:
+Define a resource containing the endpoint and `Decodable` models for JSON response:
 ```swift
 struct FindBooks: APIResource {
     typealias Response = BooksResponse
