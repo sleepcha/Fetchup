@@ -70,7 +70,7 @@ public extension FetchupClientProtocol {
         var url = resource.endpoint.relative(to: configuration.baseURL)
         
         if !queryItems.isEmpty {
-            if #available(iOS 16.0, macOS 13.0, *) {
+            if #available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *) {
                 url.append(queryItems: queryItems)
             } else {
                 var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
@@ -93,8 +93,7 @@ private extension URL {
     
     /// Returns current URL relative to `baseURL`. If `baseURL` is nil the original URL is returned.
     func relative(to baseURL: URL?) -> URL {
-        
-        if let baseURL = baseURL {
+        if let baseURL {
             return URL(string: baseURL.absoluteString + self.absoluteString)!
         } else {
             return self

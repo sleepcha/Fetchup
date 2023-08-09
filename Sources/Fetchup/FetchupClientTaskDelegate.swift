@@ -24,7 +24,7 @@ internal class FetchupClientTaskDelegate: NSObject {
 
 extension FetchupClientTaskDelegate: URLSessionTaskDelegate, URLSessionDataDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        if let error = error {
+        if let error {
             completionHandler(.failure(error))
             return
         }
@@ -38,14 +38,14 @@ extension FetchupClientTaskDelegate: URLSessionTaskDelegate, URLSessionDataDeleg
         guard 200..<300 ~= response.statusCode else {
             // debug info containing HTTP error code and response headers
             #if DEBUG
-                let request = task.originalRequest!
-                var bodyString = ""
-                if let body = request.httpBody { bodyString = String(data: body, encoding: .utf8)! }
-
-                print(response.statusCode, request, bodyString)
-                print("[")
-                response.allHeaderFields.forEach { print("  \($0.key): \($0.value)") }
-                print("]\n")
+                if let request = task.originalRequest,
+                   let body = request.httpBody,
+                   let bodyString = String(data: body, encoding: .utf8) {
+                    print(response.statusCode, request, bodyString)
+                    print("[")
+                    response.allHeaderFields.forEach { print("  \($0.key): \($0.value)") }
+                    print("]\n")
+                }
             #endif
             
             let error = FetchupClientError.httpError(response.statusCode)
