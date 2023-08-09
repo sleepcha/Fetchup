@@ -62,6 +62,6 @@ client.fetchDataTask(resource, expiresOn: tomorrow) {
 If the response was successful and has not yet expired you can retrieve it from cache:
 ```swift
 if let cachedBooks = client.cached(resource).books {
-    print(books)
+    print(cachedBooks)
 }
 ```
