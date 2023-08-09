@@ -22,8 +22,8 @@ public extension FetchupClientProtocol {
     ///
     ///  - Parameters:
     ///     - resource: An instance that contains the data for generating a request.
-    ///     - expirationDate: Ignore if `configuration.manualCaching` is set to false. If not nil, the response will be aggressively cached with the provided expiration date.
-    ///     - completion: A completion handler that passes a model object of type `Response` (decodable type declared in `resource`) in case of `.success`.
+    ///     - expirationDate: Ignore if `configuration.manualCaching` is set to false. Otherwise if not nil, the response will be aggressively cached with the provided expiration date.
+    ///     - completion: A completion handler that passes a model object of type `Response` (associated type declared in `resource`) in case of `.success`.
     ///     Otherwise `.failure(Error)` is passed.
     func fetchDataTask<T: APIResource>(
         _ resource: T,
@@ -33,7 +33,7 @@ public extension FetchupClientProtocol {
         let request = generateURLRequest(for: resource)
         let task = session.dataTask(with: request)
         
-        task.delegate = FetchupClientTaskDelegate(manualCaching: configuration.manualCaching, expirationDate: expirationDate) {
+        task.delegate = FetchupClientTaskDelegate(configuration, expirationDate: expirationDate) {
             completion($0.flatMap(resource.decode))
         }
         
@@ -43,7 +43,7 @@ public extension FetchupClientProtocol {
     /// Returns or invalidates a cached version of resource depending on its expiration. Will always return nil if ``FetchupClientConfiguration/manualCaching`` is set to false.
     func cached<T: APIResource>(_ resource: T) -> T.ResultResponse? {
         guard configuration.manualCaching else { return nil }
-        let request = generateURLRequest(for: resource).withGETMethod
+        let request = configuration.modifyRequest(generateURLRequest(for: resource))
         
         guard let cache = session.configuration.urlCache,
               let response = cache.cachedResponse(for: request),
@@ -60,12 +60,12 @@ public extension FetchupClientProtocol {
         }
     }
     
-    func removeCached(_ resource: some APIResource) {
-        let request = generateURLRequest(for: resource).withGETMethod
+    func removeCached<T: APIResource>(_ resource: T) {
+        let request = configuration.modifyRequest(generateURLRequest(for: resource))
         session.configuration.urlCache?.removeCachedResponse(for: request)
     }
     
-    private func generateURLRequest(for resource: some APIResource) -> URLRequest {
+    private func generateURLRequest<T: APIResource>(for resource: T) -> URLRequest {
         let queryItems = resource.queryParameters.map { URLQueryItem(name: $0, valueForPercentEncoding: $1) }
         var url = resource.endpoint.relative(to: configuration.baseURL)
         
@@ -112,21 +112,6 @@ private extension URLQueryItem {
         }
         
         self.init(name: name, value: value.addingPercentEncoding(withAllowedCharacters: rfc3986Allowed))
-    }
-}
-
-
-internal extension URLRequest {
-    
-    /// Modifies the request method to GET.
-    ///
-    /// A hack for manually caching POST requests that otherwise behave like GET ones
-    /// (when you're forced to pass query parameters using JSON but not query string of the URL and receive a resource that you'd like to cache).
-    /// Otherwise URLCache won't retrieve cached responses to POST requests that have an HTTP body.
-    var withGETMethod: URLRequest {
-        var modifiedRequest = self
-        modifiedRequest.httpMethod = HTTPMethod.get.rawValue
-        return modifiedRequest
     }
 }
 

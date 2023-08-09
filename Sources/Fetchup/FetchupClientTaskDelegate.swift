@@ -10,12 +10,12 @@ import Foundation
 
 internal class FetchupClientTaskDelegate: NSObject {
     private var data: Data?
-    private let manualCaching: Bool
+    private let configuration: FetchupClientConfiguration
     private let expirationDate: Date?
     private let completionHandler: (Result<Data, Error>) -> Void
     
-    init(manualCaching: Bool, expirationDate: Date?, completionHandler: @escaping (Result<Data, Error>) -> Void) {
-        self.manualCaching = manualCaching
+    init(_ configuration: FetchupClientConfiguration, expirationDate: Date?, completionHandler: @escaping (Result<Data, Error>) -> Void) {
+        self.configuration = configuration
         self.expirationDate = expirationDate
         self.completionHandler = completionHandler
     }
@@ -72,16 +72,15 @@ extension FetchupClientTaskDelegate: URLSessionTaskDelegate, URLSessionDataDeleg
         willCacheResponse proposedResponse: CachedURLResponse,
         completionHandler: @escaping (CachedURLResponse?) -> Void
     ) {
-        guard manualCaching
-        else {
+        guard configuration.manualCaching else {
             completionHandler(proposedResponse)
             return
         }
         
         if let expirationDate,
-           let request = dataTask.originalRequest?.withGETMethod,
+           let request = dataTask.originalRequest,
            let cache = session.configuration.urlCache {
-            cache.storeCachedResponse(proposedResponse.with(expirationDate), for: request)
+            cache.storeCachedResponse(proposedResponse.with(expirationDate), for: configuration.modifyRequest(request))
         }
         
         completionHandler(nil)
@@ -96,7 +95,7 @@ extension FetchupClientTaskDelegate: URLSessionTaskDelegate, URLSessionDataDeleg
             case .networkLoad: return "network load"
             case .serverPush: return "server push"
             case .localCache: return "local cache"
-            @unknown default: return "unsupported case"
+            @unknown default: return "unsupported"
             }
         }
             
@@ -110,14 +109,19 @@ extension FetchupClientTaskDelegate: URLSessionTaskDelegate, URLSessionDataDeleg
 
 
 internal extension CachedURLResponse {
-    private var expirationDateKey: String { "expirationDate" }
+    private static let expirationDateKey = "expirationDate"
     
-    var expirationDate: Date? { self.userInfo?[expirationDateKey] as? Date }
+    var expirationDate: Date? { self.userInfo?[Self.expirationDateKey] as? Date }
     
     func with(_ expirationDate: Date) -> CachedURLResponse {
         var newUserInfo = self.userInfo ?? [:]
-        newUserInfo[expirationDateKey] = expirationDate
+        newUserInfo[Self.expirationDateKey] = expirationDate
         
-        return CachedURLResponse(response: response, data: data, userInfo: newUserInfo, storagePolicy: storagePolicy)
+        return CachedURLResponse(
+            response: response,
+            data: data,
+            userInfo: newUserInfo,
+            storagePolicy: storagePolicy
+        )
     }
 }

@@ -16,7 +16,7 @@ class SomeAPIClient: FetchupClientProtocol {
 ```
 
 
-Define a resource containing the endpoint and `Decodable` types for JSON response:
+Define a resource describing the endpoint:
 ```swift
 struct FindBooks: APIResource {
     typealias Response = BooksResponse
@@ -28,7 +28,10 @@ struct FindBooks: APIResource {
         queryParameters = ["author": authorName]
     }
 }
+```
 
+ ...and `Decodable` type(s) for JSON response:
+```swift
 struct BooksResponse: Decodable {
     let books: [Book]
 }
@@ -40,7 +43,7 @@ struct Book: Decodable {
 }
 ```
 
-Finally, fetch the resource and cache the response:
+Finally, fetch the resource while caching the response (omit `expiresOn` to prevent caching):
 ```swift
 let client = SomeAPIClient()
 let resource = FindBooks(writtenBy: "Stephen King")
