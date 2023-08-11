@@ -28,7 +28,7 @@ public extension FetchupClientProtocol {
     func fetchDataTask<T: APIResource>(
         _ resource: T,
         expiresOn expirationDate: Date? = nil,
-        completion: @escaping T.ResultResponseHandler
+        completion: @escaping (Result<T.Response, Error>) -> Void
     ) -> URLSessionDataTask {
         let request = generateURLRequest(for: resource)
         let task = session.dataTask(with: request)
@@ -41,7 +41,7 @@ public extension FetchupClientProtocol {
     }
     
     /// Returns or invalidates a cached version of resource depending on its expiration. Will always return nil if ``FetchupClientConfiguration/manualCaching`` is set to false.
-    func cached<T: APIResource>(_ resource: T) -> T.ResultResponse? {
+    func cached<T: APIResource>(_ resource: T) -> Result<T.Response, Error>? {
         guard configuration.manualCaching else { return nil }
         let request = configuration.modifyRequest(generateURLRequest(for: resource))
         

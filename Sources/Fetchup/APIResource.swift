@@ -13,8 +13,6 @@ import Foundation
 /// `body` parameter represents the data passed to `URLRequest` message body.
 public protocol APIResource {
     associatedtype Response
-    typealias ResultResponse = Result<Response, Error>
-    typealias ResultResponseHandler = (Result<Response, Error>) -> Void
     
     var method: HTTPMethod { get }
     var endpoint: URL { get }
@@ -27,7 +25,7 @@ public protocol APIResource {
     ///
     /// The default implementation of the method is for `Decodable` kind of `Response`.
     /// For other kinds of data you will have to provide your own implementation.
-    func decode(_ data: Data) -> ResultResponse
+    func decode(_ data: Data) -> Result<Response, Error>
 }
 
 
@@ -41,7 +39,7 @@ public extension APIResource {
 
 /// Default decoding implementation for JSON responses
 public extension APIResource where Response: Decodable {
-    func decode(_ data: Data) -> ResultResponse {
+    func decode(_ data: Data) -> Result<Response, Error> {
         return data.decoded(as: Response.self)
     }
 }
