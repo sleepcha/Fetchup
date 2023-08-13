@@ -16,9 +16,9 @@ import Foundation
 ///
 /// `modifyRequest` gives you an opportunity to modify requests before caching them (e.g. remove/obfuscate headers containing private data, change the HTTP method, etc.).
 public struct FetchupClientConfiguration {
-    let baseURL: URL?
-    let manualCaching: Bool
-    let modifyRequest: ((URLRequest) -> URLRequest)
+    public let baseURL: URL?
+    public let manualCaching: Bool
+    internal let modifyRequest: ((URLRequest) -> URLRequest)
     
     public init(
         baseURL: URL? = nil,
