@@ -18,12 +18,12 @@ import Foundation
 public struct FetchupClientConfiguration {
     public let baseURL: URL?
     public let manualCaching: Bool
-    internal let modifyRequest: (URLRequest) -> URLRequest
+    internal let modifyRequest: ((URLRequest) -> URLRequest)
     
     public init(
         baseURL: URL? = nil,
         manualCaching: Bool = false,
-        modifyRequest: @escaping (URLRequest) -> URLRequest = { return $0 }
+        modifyRequest: @escaping ((URLRequest) -> URLRequest) = { return $0 }
     ) {
         self.baseURL = baseURL
         self.manualCaching = manualCaching
