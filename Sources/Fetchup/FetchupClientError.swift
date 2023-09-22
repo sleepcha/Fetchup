@@ -2,11 +2,10 @@
 //  FetchupClientError.swift
 //  TinkoffStocks
 //
-//  Created by Jacob Chase on 12/15/22.
+//  Created by sleepcha on 12/15/22.
 //
 
 import Foundation
-
 
 public enum FetchupClientError: LocalizedError {
     case invalidResponse

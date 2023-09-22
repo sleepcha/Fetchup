@@ -7,10 +7,7 @@ A simple Swift REST API client with an option of aggressive manual caching using
 Create your own client by conforming to `FetchupClientProtocol`:
 ```swift
 class SomeAPIClient: FetchupClientProtocol {
-    let configuration = FetchupClientConfiguration(
-        baseURL: "https://someserver.com/rest",
-        manualCaching: true
-    )
+    let configuration = FetchupClientConfiguration(baseURL: "https://someserver.com/rest")
     let session = URLSession.shared
 }
 ```
@@ -43,13 +40,13 @@ struct Book: Decodable {
 }
 ```
 
-Finally, fetch the resource while caching the response (omit `expiresOn` to prevent caching):
+Finally, fetch the resource while caching the response (use `.disabled` to prevent caching):
 ```swift
 let client = SomeAPIClient()
 let resource = FindBooks(writtenBy: "Stephen King")
 let tomorrow = Date.now.addingTimeInterval(24*60*60)
 
-client.fetchDataTask(resource, expiresOn: tomorrow) {
+client.fetchDataTask(resource, cacheMode: .expires(tomorrow)) {
     switch $0 {
     case .success(let response):
         print(response.books)
