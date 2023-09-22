@@ -2,25 +2,23 @@
 //  FetchupClientTaskDelegate.swift
 //  TradeTerminal
 //
-//  Created by Jacob Chase on 4/11/23.
+//  Created by sleepcha on 4/11/23.
 //
 
 import Foundation
 
-
 internal class FetchupClientTaskDelegate: NSObject {
     private var data: Data?
     private let configuration: FetchupClientConfiguration
-    private let expirationDate: Date?
+    private let cacheMode: CacheMode
     private let completionHandler: (Result<Data, Error>) -> Void
     
-    init(_ configuration: FetchupClientConfiguration, expirationDate: Date?, completionHandler: @escaping (Result<Data, Error>) -> Void) {
+    init(_ configuration: FetchupClientConfiguration, cacheMode: CacheMode, completionHandler: @escaping (Result<Data, Error>) -> Void) {
         self.configuration = configuration
-        self.expirationDate = expirationDate
+        self.cacheMode = cacheMode
         self.completionHandler = completionHandler
     }
 }
-
 
 extension FetchupClientTaskDelegate: URLSessionTaskDelegate, URLSessionDataDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
@@ -36,17 +34,14 @@ extension FetchupClientTaskDelegate: URLSessionTaskDelegate, URLSessionDataDeleg
         }
 
         guard 200..<300 ~= response.statusCode else {
-            // debug info containing HTTP error code and response headers
-            #if DEBUG
-                if let request = task.originalRequest,
-                   let body = request.httpBody,
-                   let bodyString = String(data: body, encoding: .utf8) {
-                    print(response.statusCode, request, bodyString)
-                    print("[")
-                    response.allHeaderFields.forEach { print("  \($0.key): \($0.value)") }
-                    print("]\n")
-                }
-            #endif
+            if let log = configuration.loggingHandler, let url = task.originalRequest?.fullURL {
+                let headers = response
+                    .allHeaderFields
+                    .map { "\($0.key): \($0.value)" }
+                    .sorted(by: { $0 < $1 })
+                    .joined(separator: "\n  ")
+                log("HTTP Error \(response.statusCode) - \(url)\n[\n  \(headers)\n]")
+            }
             
             let error = FetchupClientError.httpError(response.statusCode)
             completionHandler(.failure(error))
@@ -72,56 +67,52 @@ extension FetchupClientTaskDelegate: URLSessionTaskDelegate, URLSessionDataDeleg
         willCacheResponse proposedResponse: CachedURLResponse,
         completionHandler: @escaping (CachedURLResponse?) -> Void
     ) {
-        guard configuration.manualCaching else {
+        switch cacheMode {
+        case .policy:
             completionHandler(proposedResponse)
+        case .expires(let expirationDate):
+            if var request = dataTask.currentRequest,
+               let cache = session.configuration.urlCache {
+                request.httpBody = dataTask.originalRequest?.httpBody
+                cache.storeCachedResponse(proposedResponse.with(expirationDate), for: configuration.transformRequest(request))
+            }
+            completionHandler(nil)
+        case .disabled:
+            completionHandler(nil)
+        }
+    }
+
+    // debug info to know if URLSession response originates from cache
+    func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+        guard
+            let log = configuration.loggingHandler,
+            let url = task.originalRequest?.fullURL
+        else {
             return
         }
-        
-        if let expirationDate,
-           let request = dataTask.originalRequest,
-           let cache = session.configuration.urlCache {
-            cache.storeCachedResponse(proposedResponse.with(expirationDate), for: configuration.modifyRequest(request))
-        }
-        
-        completionHandler(nil)
-    }
-
-    // debug info to know if URLSession response originates from cache (not applicable when manualCaching)
-    #if DEBUG
-    func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-        func fetchTypeName(_ fetchType: URLSessionTaskMetrics.ResourceFetchType) -> String {
-            switch fetchType {
-            case .unknown: return "unknown"
-            case .networkLoad: return "network load"
-            case .serverPush: return "server push"
-            case .localCache: return "local cache"
-            @unknown default: return "unsupported"
-            }
-        }
-            
         let fetchTypes = metrics.transactionMetrics.map { fetchTypeName($0.resourceFetchType) }
-        if let url = task.response?.url {
-            print(fetchTypes, url)
+        log(fetchTypes.description + " \(url)")
+    }
+    
+    func fetchTypeName(_ fetchType: URLSessionTaskMetrics.ResourceFetchType) -> String {
+        switch fetchType {
+        case .unknown: return "unknown"
+        case .networkLoad: return "network load"
+        case .serverPush: return "server push"
+        case .localCache: return "local cache"
+        @unknown default: return "unsupported"
         }
     }
-    #endif
 }
 
-
-internal extension CachedURLResponse {
-    private static let expirationDateKey = "expirationDate"
-    
-    var expirationDate: Date? { self.userInfo?[Self.expirationDateKey] as? Date }
-    
-    func with(_ expirationDate: Date) -> CachedURLResponse {
-        var newUserInfo = self.userInfo ?? [:]
-        newUserInfo[Self.expirationDateKey] = expirationDate
+extension URLRequest {
+    var fullURL: String? {
+        guard let url = url?.absoluteString else { return nil }
         
-        return CachedURLResponse(
-            response: response,
-            data: data,
-            userInfo: newUserInfo,
-            storagePolicy: storagePolicy
-        )
+        if let httpBody, let body = String(data: httpBody, encoding: .utf8) {
+            return "\(url) \(body)"
+        } else {
+            return url
+        }
     }
 }
