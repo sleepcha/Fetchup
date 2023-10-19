@@ -1,35 +1,29 @@
-//
-//  FetchupClientConfiguration.swift
-//  TinkoffStocks
-//
-//  Created by sleepcha on 3/7/23.
-//
-
 import Foundation
 
 /// A structure used to initialize Fetchup client.
 ///
 /// `baseURL` will be concatenated with the endpoint path.
 ///
-/// `percentEncodingUnreservedCharacters` is used to percent-encode URL query parameters.
+/// `percentEncodingAllowedCharacters` is a set of characters that will not be percent-encoded in URL query parameters.
 ///
-///  `loggingHandler` allows to get debug information about requests and responses (e.g. to print it out in console).
+/// `loggingHandler` allows to get debug information about requests and responses (e.g. to print it out in console).
 ///
 /// `transformRequest` gives you the opportunity to modify a request before caching it (e.g. remove/obfuscate headers containing private data, change the HTTP method, etc.).
 public struct FetchupClientConfiguration {
     public let baseURL: URL?
-    internal let unreservedCharacters: CharacterSet
+    internal let allowedCharacters: CharacterSet
     internal let loggingHandler: ((String) -> Void)?
     internal let transformRequest: (URLRequest) -> URLRequest
     
     public init(
+        /// `baseURL` will be concatenated with the endpoint path.
         baseURL: URL? = nil,
-        percentEncodingUnreservedCharacters: CharacterSet = .rfc3986Allowed,
+        percentEncodingAllowedCharacters: CharacterSet = .rfc3986Allowed,
         loggingHandler: ((String) -> Void)? = nil,
         transformRequest: @escaping (URLRequest) -> URLRequest = { return $0 }
     ) {
         self.baseURL = baseURL
-        self.unreservedCharacters = percentEncodingUnreservedCharacters
+        self.allowedCharacters = percentEncodingAllowedCharacters
         self.transformRequest = transformRequest
         self.loggingHandler = loggingHandler
     }

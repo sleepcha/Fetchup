@@ -1,10 +1,3 @@
-//
-//  FetchupClientTaskDelegate.swift
-//  TradeTerminal
-//
-//  Created by sleepcha on 4/11/23.
-//
-
 import Foundation
 
 internal class FetchupClientTaskDelegate: NSObject {
@@ -43,13 +36,13 @@ extension FetchupClientTaskDelegate: URLSessionTaskDelegate, URLSessionDataDeleg
                 log("HTTP Error \(response.statusCode) - \(url)\n[\n  \(headers)\n]")
             }
             
-            let error = FetchupClientError.httpError(response.statusCode)
+            let error = FetchupClientError.httpError(response)
             completionHandler(.failure(error))
             return
         }
         
         guard let data = data else {
-            let error = FetchupClientError.emptyData(response.statusCode)
+            let error = FetchupClientError.emptyData(response)
             completionHandler(.failure(error))
             return
         }

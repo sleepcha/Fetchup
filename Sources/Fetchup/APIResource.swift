@@ -1,10 +1,3 @@
-//
-//  APIResource.swift
-//  TinkoffStocks
-//
-//  Created by sleepcha on 12/13/22.
-//
-
 import Foundation
 
 /// Protocol used for REST communication in ``FetchupClientProtocol``. Represents the request data used to fetch a resource.

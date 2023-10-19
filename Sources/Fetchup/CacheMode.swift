@@ -1,10 +1,3 @@
-//
-//  CacheMode.swift
-//  
-//
-//  Created by sleepcha on 9/22/23.
-//  
-
 import Foundation
 
 public enum CacheMode {

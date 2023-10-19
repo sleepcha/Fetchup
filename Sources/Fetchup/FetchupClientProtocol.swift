@@ -1,10 +1,3 @@
-//
-//  FetchupClientProtocol.swift
-//  TinkoffStocks
-//
-//  Created by sleepcha on 11/17/22.
-//
-
 import Foundation
 
 public protocol FetchupClientProtocol {
@@ -64,7 +57,7 @@ public extension FetchupClientProtocol {
         let queryItems = resource.queryParameters.map {
             URLQueryItem(
                 name: $0,
-                value: $1.addingPercentEncoding(withAllowedCharacters: configuration.unreservedCharacters)
+                value: $1.addingPercentEncoding(withAllowedCharacters: configuration.allowedCharacters)
             )
         }
         var url = resource.endpoint.relative(to: configuration.baseURL)
