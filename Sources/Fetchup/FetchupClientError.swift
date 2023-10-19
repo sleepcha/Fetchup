@@ -9,16 +9,16 @@ import Foundation
 
 public enum FetchupClientError: LocalizedError {
     case invalidResponse
-    case httpError(Int)
-    case emptyData(Int)
+    case httpError(HTTPURLResponse)
+    case emptyData(HTTPURLResponse)
     
     public var errorDescription: String? {
         let httpMessage = { HTTPURLResponse.localizedString(forStatusCode: $0) }
         
         switch self {
         case .invalidResponse: return "Empty or broken HTTP response."
-        case .httpError(let code): return "HTTP \(code) - \(httpMessage(code))"
-        case .emptyData(let code): return "No data received. HTTP \(code) - \(httpMessage(code))"
+        case .httpError(let response): return "HTTP \(response.statusCode) - \(httpMessage(response.statusCode))"
+        case .emptyData(let response): return "No data received. HTTP \(response.statusCode) - \(httpMessage(response.statusCode))"
         }
     }
 }
