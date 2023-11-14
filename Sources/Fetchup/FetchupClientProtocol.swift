@@ -54,12 +54,9 @@ public extension FetchupClientProtocol {
     }
     
     private func generateURLRequest<T: APIResource>(for resource: T) -> URLRequest {
-        let queryItems = resource.queryParameters.map {
-            URLQueryItem(
-                name: $0,
-                value: $1.addingPercentEncoding(withAllowedCharacters: configuration.allowedCharacters)
-            )
-        }
+        let queryItems = resource.queryParameters
+            .map { ($0, $1.addingPercentEncoding(withAllowedCharacters: configuration.allowedCharacters)) }
+            .map(URLQueryItem.init)
         var url = resource.endpoint.relative(to: configuration.baseURL)
         
         if !queryItems.isEmpty {
