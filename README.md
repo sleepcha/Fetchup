@@ -13,10 +13,10 @@ class SomeAPIClient: FetchupClientProtocol {
 ```
 
 
-Define a resource describing the endpoint:
+Define a resource describing the endpoint and `Decodable` type for JSON response:
 ```swift
 struct FindBooks: APIResource {
-    typealias Response = BooksResponse
+    typealias Response = [Book]
     let method: HTTPMethod = .get
     let endpoint: URL = "/library/books"
     let queryParameters: [String: String]
@@ -24,13 +24,6 @@ struct FindBooks: APIResource {
     init(writtenBy authorName: String) {
         queryParameters = ["author": authorName]
     }
-}
-```
-
- ...and `Decodable` type(s) for JSON response:
-```swift
-struct BooksResponse: Decodable {
-    let books: [Book]
 }
 
 struct Book: Decodable {
@@ -48,8 +41,8 @@ let tomorrow = Date.now.addingTimeInterval(24*60*60)
 
 client.fetchDataTask(resource, cacheMode: .expires(tomorrow)) {
     switch $0 {
-    case .success(let response):
-        print(response.books)
+    case .success(let books):
+        print(books)
     case .failure(let error):
         print(error.localizedDescription)
     }
@@ -58,7 +51,7 @@ client.fetchDataTask(resource, cacheMode: .expires(tomorrow)) {
 
 If the response was successful and has not yet expired you can retrieve it from cache:
 ```swift
-if let cachedBooks = client.cached(resource).books {
+if case .success(let cachedBooks) = client.cached(resource) {
     print(cachedBooks)
 }
 ```
