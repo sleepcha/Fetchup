@@ -42,7 +42,7 @@ extension URL: ExpressibleByStringLiteral {
     }
 }
 
-private extension Data {
+public extension Data {
     /// Returns an instance of type `T` decoded from JSON data or a `DecodingError`.
     func decoded<T: Decodable>(as type: T.Type) -> Result<T, Error> {
         let decoder = JSONDecoder()
