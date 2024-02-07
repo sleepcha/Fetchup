@@ -33,13 +33,12 @@ struct Book: Decodable {
 }
 ```
 
-Finally, fetch the resource while caching the response (use `.disabled` to prevent caching):
+Finally, fetch the resource while caching the response (use `CacheMode.disabled` to prevent all caching):
 ```swift
 let client = SomeAPIClient()
 let resource = FindBooks(writtenBy: "Stephen King")
-let tomorrow = Date.now.addingTimeInterval(24*60*60)
 
-client.fetchDataTask(resource, cacheMode: .expires(tomorrow)) {
+client.fetchDataTask(resource, cacheMode: .manual) {
     switch $0 {
     case .success(let books):
         print(books)
@@ -51,7 +50,12 @@ client.fetchDataTask(resource, cacheMode: .expires(tomorrow)) {
 
 If the response was successful and has not yet expired you can retrieve it from cache:
 ```swift
-if case .success(let cachedBooks) = client.cached(resource) {
+let cachedVersion = client.cached(resource) { creationDate in
+    let expirationDate = creationDate.addingTimeInterval(24 * 60 * 60)
+    return Date.now < expirationDate
+}
+
+if case let .success(cachedBooks) = cachedVersion {
     print(cachedBooks)
 }
 ```

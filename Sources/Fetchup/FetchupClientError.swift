@@ -1,17 +1,21 @@
 import Foundation
 
 public enum FetchupClientError: LocalizedError {
-    case invalidResponse
-    case httpError(HTTPURLResponse)
+    case emptyResponse
+    case invalidHTTPResponse(URLResponse)
+    case httpError(Data?, HTTPURLResponse)
     case emptyData(HTTPURLResponse)
-    
+
     public var errorDescription: String? {
-        let httpMessage = { HTTPURLResponse.localizedString(forStatusCode: $0) }
-        
         switch self {
-        case .invalidResponse: return "Empty or broken HTTP response."
-        case .httpError(let response): return "HTTP \(response.statusCode) - \(httpMessage(response.statusCode))"
-        case .emptyData(let response): return "No data received. HTTP \(response.statusCode) - \(httpMessage(response.statusCode))"
+        case .emptyResponse:
+            "Empty URL response"
+        case let .invalidHTTPResponse(response):
+            "Invalid HTTP response\n\(response)"
+        case let .httpError(_, response):
+            "HTTP error \(response.statusCode) - "
+        case let .emptyData(response):
+            "No data received. HTTP \(response.statusCode)"
         }
     }
 }

@@ -5,13 +5,13 @@ import Foundation
 /// `body` parameter represents the data passed to `URLRequest` message body.
 public protocol APIResource {
     associatedtype Response
-    
+
     var method: HTTPMethod { get }
     var endpoint: URL { get }
     var queryParameters: [String: String] { get }
     var headers: [String: String] { get }
     var body: Data? { get }
-    
+
     /// Transforms the received data to a specific instance of `Response`.
     ///
     /// The default implementation of the method is for `Decodable` kind of `Response`.
@@ -35,7 +35,7 @@ public extension APIResource where Response: Decodable {
 
 // MARK: - Extensions
 
-/// A convenience for using string values as URLs
+/// A convenience for using string literals as URLs
 extension URL: ExpressibleByStringLiteral {
     public init(stringLiteral value: StaticString) {
         self.init(string: "\(value)")!
@@ -43,7 +43,6 @@ extension URL: ExpressibleByStringLiteral {
 }
 
 private extension Data {
-    
     /// Returns an instance of type `T` decoded from JSON data or a `DecodingError`.
     func decoded<T: Decodable>(as type: T.Type) -> Result<T, Error> {
         let decoder = JSONDecoder()
@@ -58,7 +57,6 @@ private extension Data {
 }
 
 private extension JSONDecoder.DateDecodingStrategy {
-    
     /// Attempts to decode ISO8601 dates with *optional* fractional seconds.
     static let iso8601WithOptionalFractionalSeconds = custom {
         let container = try $0.singleValueContainer()
@@ -66,7 +64,7 @@ private extension JSONDecoder.DateDecodingStrategy {
 
         let formatter = ISO8601DateFormatter()
         if string.contains(".") { formatter.formatOptions.insert(.withFractionalSeconds) }
-        
+
         guard let date = formatter.date(from: string) else {
             throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid date: \(string)")
         }

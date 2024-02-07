@@ -6,12 +6,10 @@ public protocol FetchupClientProtocol {
 }
 
 public extension FetchupClientProtocol {
-    
     /// Asynchronously fetches a REST resource declared in ``APIResource`` using `URLSession` and returns the result in a completion handler.
     ///
-    ///  - Parameters:
+    /// - Parameters:
     ///     - resource: An instance that contains the data for generating a request.
-    ///     - cacheMode: Tells the client how to cache the response.
     ///     - completion: A completion handler that passes a model object of type `Response` (associated type declared in `resource`) in case of `.success`.
     ///     Otherwise `.failure(Error)` is passed.
     func fetchDataTask<T: APIResource>(
@@ -21,54 +19,82 @@ public extension FetchupClientProtocol {
     ) -> URLSessionDataTask {
         let request = generateURLRequest(for: resource)
         let task = session.dataTask(with: request)
-        
+
         task.delegate = FetchupClientTaskDelegate(configuration, cacheMode: cacheMode) {
-            completion($0.flatMap(resource.decode))
+            let result = Self.processResponse(data: $0, response: $1, error: $2)
+            completion(result.flatMap(resource.decode))
         }
-        
+
         return task
     }
-    
-    /// Returns or invalidates a cached version of resource depending on its expiration. Will always return `nil` if the response has been cached using `.policy` cache mode.
-    func cached<T: APIResource>(_ resource: T) -> Result<T.Response, Error>? {
+
+    /// Returns a cached version of the resource if it has not yet expired.
+    /// If `shouldInvalidateExpiredCache` is set to true, expired responses will be automatically w.
+    /// Returns `nil` if there is no entry, if it has exipred, or `cacheMode` was not set to `.manual` in `fetchDataTask`.
+    ///
+    /// - Parameters:
+    ///     - resource: An instance that contains the data for generating a request.
+    ///     - isValid: A closure that checks whether the cached version has expired, given the creation date of the response.
+    func cached<T: APIResource>(_ resource: T, isValid: (Date) -> Bool) -> Result<T.Response, Error>? {
         let request = configuration.transformRequest(generateURLRequest(for: resource))
-        
+
         guard let urlCache = session.configuration.urlCache,
               let response = urlCache.cachedResponse(for: request),
-              let expirationDate = response.expirationDate
+              let entryDate = response.entryDate
         else {
             return nil
         }
-        
-        if Date.now > expirationDate {
-            urlCache.removeCachedResponse(for: request)
+
+        guard isValid(entryDate) else {
+            if configuration.shouldInvalidateExpiredCache {
+                urlCache.removeCachedResponse(for: request)
+            }
             return nil
-        } else {
-            return resource.decode(response.data)
         }
+        return resource.decode(response.data)
     }
-    
+
+    /// Removes a cached entry if there is one.
     func removeCached<T: APIResource>(_ resource: T) {
         let request = configuration.transformRequest(generateURLRequest(for: resource))
         session.configuration.urlCache?.removeCachedResponse(for: request)
     }
-    
+
+    // MARK: - Private methods
+
+    private static func processResponse(data: Data?, response: URLResponse?, error: Error?) -> Result<Data, Error> {
+        if let error {
+            return .failure(error)
+        }
+
+        guard let response else {
+            return .failure(FetchupClientError.emptyResponse)
+        }
+
+        guard let response = response as? HTTPURLResponse else {
+            return .failure(FetchupClientError.invalidHTTPResponse(response))
+        }
+
+        guard 200..<300 ~= response.statusCode else {
+            return .failure(FetchupClientError.httpError(data, response))
+        }
+
+        guard let data else {
+            return .failure(FetchupClientError.emptyData(response))
+        }
+
+        return .success(data)
+    }
+
     private func generateURLRequest<T: APIResource>(for resource: T) -> URLRequest {
         let queryItems = resource.queryParameters
-            .map { ($0, $1.addingPercentEncoding(withAllowedCharacters: configuration.allowedCharacters)) }
+            .mapValues { $0.addingPercentEncoding(withAllowedCharacters: configuration.allowedCharacters) }
             .map(URLQueryItem.init)
-        var url = resource.endpoint.relative(to: configuration.baseURL)
-        
-        if !queryItems.isEmpty {
-            if #available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *) {
-                url.append(queryItems: queryItems)
-            } else {
-                var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
-                components.queryItems = queryItems
-                url = components.url!
-            }
-        }
-        
+
+        let url = resource.endpoint
+            .relative(to: configuration.baseURL)
+            .appending(queryItems: queryItems)
+
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = resource.method.rawValue
         urlRequest.httpBody = resource.body
@@ -81,14 +107,14 @@ public extension FetchupClientProtocol {
 // MARK: - Extensions
 
 extension CachedURLResponse {
-    private static let expirationDateKey = "expirationDate"
-    
-    var expirationDate: Date? { self.userInfo?[Self.expirationDateKey] as? Date }
-    
-    func with(_ expirationDate: Date) -> CachedURLResponse {
-        var newUserInfo = self.userInfo ?? [:]
-        newUserInfo[Self.expirationDateKey] = expirationDate
-        
+    private static let entryDateKey = "entryDate"
+
+    var entryDate: Date? { userInfo?[Self.entryDateKey] as? Date }
+
+    func withEntryDate(_ date: Date) -> CachedURLResponse {
+        var newUserInfo = userInfo ?? [:]
+        newUserInfo[Self.entryDateKey] = date
+
         return CachedURLResponse(
             response: response,
             data: data,
@@ -99,11 +125,10 @@ extension CachedURLResponse {
 }
 
 extension URL {
-    
     /// Returns current URL relative to `baseURL`.
     func relative(to baseURL: URL?) -> URL {
         if let baseURL {
-            return URL(string: baseURL.absoluteString + self.absoluteString)!
+            return URL(string: baseURL.absoluteString + absoluteString)!
         } else {
             return self
         }
