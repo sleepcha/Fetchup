@@ -80,7 +80,7 @@ public extension FetchupClientProtocol {
             return .failure(FetchupClientError.httpError(data, response))
         }
 
-        guard let data else {
+        guard let data, !data.isEmpty else {
             return .failure(FetchupClientError.emptyData(response))
         }
 
