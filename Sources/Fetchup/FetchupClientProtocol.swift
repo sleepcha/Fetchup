@@ -91,9 +91,8 @@ public extension FetchupClientProtocol {
             .mapValues { $0.addingPercentEncoding(withAllowedCharacters: configuration.allowedCharacters) }
             .map(URLQueryItem.init)
 
-        let url = resource.endpoint
-            .relative(to: configuration.baseURL)
-            .appending(queryItems: queryItems)
+        var url = resource.endpoint.relative(to: configuration.baseURL)
+        if !queryItems.isEmpty { url.append(queryItems: queryItems) }
 
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = resource.method.rawValue
