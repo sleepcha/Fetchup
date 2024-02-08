@@ -29,7 +29,7 @@ public extension FetchupClientProtocol {
     }
 
     /// Returns a cached version of the resource if it has not yet expired.
-    /// If `shouldInvalidateExpiredCache` is set to true, expired responses will be automatically w.
+    /// If `shouldInvalidateExpiredCache` is set to true, expired responses will be automatically removed.
     /// Returns `nil` if there is no entry, if it has exipred, or `cacheMode` was not set to `.manual` in `fetchDataTask`.
     ///
     /// - Parameters:
