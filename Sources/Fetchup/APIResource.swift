@@ -1,6 +1,6 @@
 import Foundation
 
-/// Protocol used for REST communication in ``FetchupClientProtocol``. Represents the request data used to fetch a resource.
+/// Protocol used for REST communication in ``FetchupClient``. Represents the request data used to fetch a resource.
 ///
 /// `body` parameter represents the data passed to `URLRequest` message body.
 public protocol APIResource {
