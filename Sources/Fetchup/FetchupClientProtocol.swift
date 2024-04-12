@@ -1,5 +1,7 @@
 import Foundation
 
+// MARK: - FetchupClientProtocol
+
 public protocol FetchupClientProtocol {
     var configuration: FetchupClientConfiguration { get }
     var session: URLSession { get }
@@ -56,12 +58,10 @@ public extension FetchupClientProtocol {
     }
 
     /// Removes a cached entry if there is one.
-    func removeCached<T: APIResource>(_ resource: T) {
+    func removeCached(_ resource: some APIResource) {
         let request = configuration.transformRequest(generateURLRequest(for: resource))
         session.configuration.urlCache?.removeCachedResponse(for: request)
     }
-
-    // MARK: - Private methods
 
     private static func processResponse(data: Data?, response: URLResponse?, error: Error?) -> Result<Data, Error> {
         if let error {
@@ -87,7 +87,7 @@ public extension FetchupClientProtocol {
         return .success(data)
     }
 
-    private func generateURLRequest<T: APIResource>(for resource: T) -> URLRequest {
+    private func generateURLRequest(for resource: some APIResource) -> URLRequest {
         let queryItems = resource.queryParameters
             .mapValues { $0.addingPercentEncoding(withAllowedCharacters: configuration.allowedCharacters) }
             .map(URLQueryItem.init)

@@ -19,24 +19,23 @@ public protocol APIResource {
     func decode(_ data: Data) -> Result<Response, Error>
 }
 
-/// Optional properties are empty by default.
 public extension APIResource {
     var queryParameters: [String: String] { [:] }
     var headers: [String: String] { [:] }
     var body: Data? { nil }
 }
 
-/// Default decoding implementation for JSON responses
 public extension APIResource where Response: Decodable {
+    /// Default decoding implementation for JSON responses
     func decode(_ data: Data) -> Result<Response, Error> {
-        return data.decoded(as: Response.self)
+        data.decoded(as: Response.self)
     }
 }
 
 // MARK: - Extensions
 
-/// A convenience for using string literals as URLs
 extension URL: ExpressibleByStringLiteral {
+    /// A convenience for using string literals as URLs
     public init(stringLiteral value: StaticString) {
         self.init(string: "\(value)")!
     }
