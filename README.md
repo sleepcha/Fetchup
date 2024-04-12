@@ -4,9 +4,9 @@ A simple Swift REST API client with an option of aggressive manual caching using
 
 ## Usage
 
-Create your own client by conforming to `FetchupClientProtocol`:
+Create your own client by conforming to `FetchupClient`:
 ```swift
-class SomeAPIClient: FetchupClientProtocol {
+class SomeAPIClient: FetchupClient {
     let configuration = FetchupClientConfiguration(baseURL: "https://someserver.com/rest")
     let session = URLSession.shared
 }
