@@ -1,13 +1,13 @@
 import Foundation
 
-// MARK: - FetchupClientProtocol
+// MARK: - FetchupClient
 
-public protocol FetchupClientProtocol {
+public protocol FetchupClient {
     var configuration: FetchupClientConfiguration { get }
     var session: URLSession { get }
 }
 
-public extension FetchupClientProtocol {
+public extension FetchupClient {
     /// Asynchronously fetches a REST resource declared in ``APIResource`` using `URLSession` and returns the result in a completion handler.
     ///
     /// - Parameters:

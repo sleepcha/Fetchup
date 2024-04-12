@@ -4,7 +4,7 @@ import Foundation
 ///
 /// `baseURL` will be concatenated with the endpoint path.
 ///
-/// `shouldInvalidateExpiredCache` if true, the client will remove the expired cached version in ``FetchupClientProtocol/cached(_:isValid:)`` method call.
+/// `shouldInvalidateExpiredCache` if true, the client will remove the expired cached version in ``FetchupClient/cached(_:isValid:)`` method call.
 ///
 /// `queryUnreservedCharacters` is a set of characters that will not be percent-encoded in URL query parameters.
 ///
