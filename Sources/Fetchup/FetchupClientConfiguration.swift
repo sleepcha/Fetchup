@@ -13,10 +13,10 @@ import Foundation
 /// `transformRequest` gives you the opportunity to modify a request before caching it (e.g. remove/obfuscate headers containing private data, change the HTTP method, etc.).
 public struct FetchupClientConfiguration {
     public let baseURL: URL?
-    internal let shouldInvalidateExpiredCache: Bool
-    internal let allowedCharacters: CharacterSet
-    internal let loggingHandler: ((String) -> Void)?
-    internal let transformRequest: (URLRequest) -> URLRequest
+    let shouldInvalidateExpiredCache: Bool
+    let allowedCharacters: CharacterSet
+    let loggingHandler: ((String) -> Void)?
+    let transformRequest: (URLRequest) -> URLRequest
 
     public init(
         baseURL: URL? = nil,
