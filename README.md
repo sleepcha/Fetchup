@@ -48,14 +48,14 @@ client.fetchDataTask(resource, cacheMode: .manual) {
 }.resume()
 ```
 
-If the response was successful and has not yet expired you can retrieve it from cache:
+If the response was successful you can retrieve it from cache validating its freshness:
 ```swift
-let cachedVersion = client.cached(resource) { creationDate in
-    let expirationDate = creationDate.addingTimeInterval(24 * 60 * 60)
-    return Date.now < expirationDate
+let noOlderThanYesterday = { (creationDate: Date) in
+    let yesterday = Date.now.addingTimeInterval(-24 * 60 * 60)
+    return creationDate > yesterday
 }
 
-if case let .success(cachedBooks) = cachedVersion {
+if case .success(let cachedBooks) = client.cached(resource, isValid: noOlderThanYesterday) {
     print(cachedBooks)
 }
 ```

@@ -39,7 +39,7 @@ public extension FetchupClient {
     ///     - resource: An instance that contains the data for generating a request.
     ///     - isValid: A closure that checks whether the cached version has expired, given the creation date of the response.
     func cached<T: APIResource>(_ resource: T, isValid: (Date) -> Bool) -> Result<T.Response, Error>? {
-        let request = configuration.transformRequest(generateURLRequest(for: resource))
+        let request = generateURLRequest(for: resource, transformForCaching: true)
 
         guard let urlCache = session.configuration.urlCache,
               let response = urlCache.cachedResponse(for: request),
@@ -59,7 +59,7 @@ public extension FetchupClient {
 
     /// Removes a cached entry if there is one.
     func removeCached(_ resource: some APIResource) {
-        let request = configuration.transformRequest(generateURLRequest(for: resource))
+        let request = generateURLRequest(for: resource, transformForCaching: true)
         session.configuration.urlCache?.removeCachedResponse(for: request)
     }
 
@@ -87,7 +87,7 @@ public extension FetchupClient {
         return .success(data)
     }
 
-    private func generateURLRequest(for resource: some APIResource) -> URLRequest {
+    private func generateURLRequest(for resource: some APIResource, transformForCaching: Bool = false) -> URLRequest {
         let queryItems = resource.queryParameters
             .mapValues { $0.addingPercentEncoding(withAllowedCharacters: configuration.allowedCharacters) }
             .map(URLQueryItem.init)
@@ -100,7 +100,7 @@ public extension FetchupClient {
         urlRequest.httpBody = resource.body
         resource.headers.forEach { urlRequest.addValue($0.value, forHTTPHeaderField: $0.key) }
 
-        return urlRequest
+        return transformForCaching ? configuration.transform(urlRequest) : urlRequest
     }
 }
 
