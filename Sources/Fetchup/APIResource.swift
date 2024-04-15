@@ -1,5 +1,7 @@
 import Foundation
 
+// MARK: - APIResource
+
 /// Protocol used for REST communication in ``FetchupClient``. Represents the request data used to fetch a resource.
 ///
 /// `body` parameter represents the data passed to `URLRequest` message body.
@@ -11,6 +13,8 @@ public protocol APIResource {
     var queryParameters: [String: String] { get }
     var headers: [String: String] { get }
     var body: Data? { get }
+    /// Allows to adjust some additional `URLRequest` properties (like `timeoutInterval`) before creating a data task.
+    var configure: ((inout URLRequest) -> Void)? { get }
 
     /// Transforms the received data to a specific instance of `Response`.
     ///
@@ -23,6 +27,7 @@ public extension APIResource {
     var queryParameters: [String: String] { [:] }
     var headers: [String: String] { [:] }
     var body: Data? { nil }
+    var configure: ((inout URLRequest) -> Void)? { nil }
 }
 
 public extension APIResource where Response: Decodable {

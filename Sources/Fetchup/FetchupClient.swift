@@ -99,8 +99,9 @@ public extension FetchupClient {
         urlRequest.httpMethod = resource.method.rawValue
         urlRequest.httpBody = resource.body
         resource.headers.forEach { urlRequest.addValue($0.value, forHTTPHeaderField: $0.key) }
+        resource.configure?(&urlRequest)
 
-        return transformForCaching ? configuration.transform(urlRequest) : urlRequest
+        return transformForCaching ? configuration.transformCached(urlRequest) : urlRequest
     }
 }
 
