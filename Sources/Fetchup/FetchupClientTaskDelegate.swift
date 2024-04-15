@@ -43,15 +43,3 @@ extension FetchupClientTaskDelegate: URLSessionTaskDelegate, URLSessionDataDeleg
         }
     }
 }
-
-extension URLRequest {
-    var fullURL: String? {
-        guard let url = url?.absoluteString else { return nil }
-
-        if let httpBody, let body = String(data: httpBody, encoding: .utf8) {
-            return "\(url) \(body)"
-        } else {
-            return url
-        }
-    }
-}

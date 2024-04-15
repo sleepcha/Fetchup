@@ -8,7 +8,7 @@ import Foundation
 ///
 /// `shouldInvalidateExpiredCache` if true, the client will remove the expired cached version in ``FetchupClient/cached(_:isValid:)`` method call.
 ///
-/// `queryUnreservedCharacters` is a set of characters that will not be percent-encoded in URL query parameters.
+/// `queryUnreservedCharacters` is a set of characters that will not be percent-encoded in URL query parameters. The set described in RFC 3986 section 2.3 is used as a default.
 ///
 /// `transformCachedRequest` gives you the opportunity to modify each request before caching it.
 /// For example, remove/obfuscate headers containing private data, modify the HTTP method or the URL.
