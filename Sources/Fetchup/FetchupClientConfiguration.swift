@@ -33,8 +33,6 @@ public struct FetchupClientConfiguration {
     }
 }
 
-// MARK: - Extensions
-
 public extension CharacterSet {
     static var rfc3986Allowed: CharacterSet {
         var charset = CharacterSet.alphanumerics
