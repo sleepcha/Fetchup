@@ -1,6 +1,8 @@
 import Foundation
 
-internal class FetchupClientTaskDelegate: NSObject {
+// MARK: - FetchupClientTaskDelegate
+
+class FetchupClientTaskDelegate: NSObject {
     private let configuration: FetchupClientConfiguration
     private let cacheMode: CacheMode
     private let completionHandler: (Data?, URLResponse?, Error?) -> Void
@@ -12,6 +14,8 @@ internal class FetchupClientTaskDelegate: NSObject {
         self.completionHandler = completionHandler
     }
 }
+
+// MARK: - URLSessionTaskDelegate, URLSessionDataDelegate
 
 extension FetchupClientTaskDelegate: URLSessionTaskDelegate, URLSessionDataDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {

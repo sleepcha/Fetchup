@@ -13,7 +13,7 @@ public protocol APIResource {
     var queryParameters: [String: String] { get }
     var headers: [String: String] { get }
     var body: Data? { get }
-    /// Allows to adjust some additional `URLRequest` properties (like `timeoutInterval`) before creating a data task.
+    /// Allows to set some additional `URLRequest` properties (like `timeoutInterval`) before creating a data task.
     var configure: ((inout URLRequest) -> Void)? { get }
 
     /// Transforms the received data to a specific instance of `Response`.
