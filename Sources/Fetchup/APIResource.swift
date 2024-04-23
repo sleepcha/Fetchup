@@ -9,7 +9,7 @@ public protocol APIResource {
     associatedtype Response
 
     var method: HTTPMethod { get }
-    var endpoint: URL { get }
+    var path: URL { get }
     var queryParameters: [String: String] { get }
     var headers: [String: String] { get }
     var body: Data? { get }
