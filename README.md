@@ -1,6 +1,6 @@
 # Fetchup
 
-A simple Swift REST API client with an option of aggressive manual caching using `URLCache`.
+A simple Swift REST API client with an option of manual caching using `URLCache` (handy for servers offering no caching policy implementation).
 
 ## Usage
 
