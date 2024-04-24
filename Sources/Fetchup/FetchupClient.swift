@@ -140,6 +140,7 @@ private extension URL {
             .map(URLQueryItem.init)
   
         var components = URLComponents(url: self, resolvingAgainstBaseURL: true)!
+        components.percentEncodedQueryItems = components.percentEncodedQueryItems ?? []
         components.percentEncodedQueryItems?.append(contentsOf: queryItems)
         return components.url!
     }
