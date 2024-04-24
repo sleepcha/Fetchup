@@ -88,12 +88,9 @@ public extension FetchupClient {
     }
 
     private func generateURLRequest(for resource: some APIResource, transformForCaching: Bool = false) -> URLRequest {
-        let queryItems = resource.queryParameters
-            .mapValues { $0.addingPercentEncoding(withAllowedCharacters: configuration.allowedCharacters) }
-            .map(URLQueryItem.init)
-
-        var url = resource.path.relative(to: configuration.baseURL)
-        if !queryItems.isEmpty { url.append(queryItems: queryItems) }
+        let url = resource.path
+            .relative(to: configuration.baseURL)
+            .appending(resource.queryParameters, notEncoding: configuration.allowedCharacters)
 
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = resource.method.rawValue
@@ -125,13 +122,29 @@ extension CachedURLResponse {
     }
 }
 
-extension URL {
+private extension URL {
     /// Returns current URL relative to `baseURL`.
     func relative(to baseURL: URL?) -> URL {
         if let baseURL {
             return URL(string: baseURL.absoluteString + absoluteString)!
         } else {
             return self
+        }
+    }
+
+    func appending(_ queryParameters: [String: String], notEncoding allowedCharacters: CharacterSet) -> URL {
+        guard !queryParameters.isEmpty else { return self }
+
+        let queryItems = queryParameters
+            .mapValues { $0.addingPercentEncoding(withAllowedCharacters: allowedCharacters) }
+            .map(URLQueryItem.init)
+
+        if #available(iOS 16.0, macOS 13.0, *) {
+            return self.appending(queryItems: queryItems)
+        } else {
+            var components = URLComponents(url: self, resolvingAgainstBaseURL: true)!
+            components.queryItems = queryItems
+            return components.url!
         }
     }
 }

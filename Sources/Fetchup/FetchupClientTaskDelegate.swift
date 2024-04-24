@@ -39,7 +39,7 @@ extension FetchupClientTaskDelegate: URLSessionTaskDelegate, URLSessionDataDeleg
             if var request = dataTask.currentRequest,
                let cache = session.configuration.urlCache {
                 request.httpBody = dataTask.originalRequest?.httpBody
-                cache.storeCachedResponse(proposedResponse.withEntryDate(Date.now), for: configuration.transformCached(request))
+                cache.storeCachedResponse(proposedResponse.withEntryDate(Date()), for: configuration.transformCached(request))
             }
             completionHandler(nil)
         case .disabled:
