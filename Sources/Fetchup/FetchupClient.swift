@@ -138,13 +138,9 @@ private extension URL {
         let queryItems = queryParameters
             .mapValues { $0.addingPercentEncoding(withAllowedCharacters: allowedCharacters) }
             .map(URLQueryItem.init)
-
-        if #available(iOS 16.0, macOS 13.0, *) {
-            return self.appending(queryItems: queryItems)
-        } else {
-            var components = URLComponents(url: self, resolvingAgainstBaseURL: true)!
-            components.queryItems = queryItems
-            return components.url!
-        }
+  
+        var components = URLComponents(url: self, resolvingAgainstBaseURL: true)!
+        components.percentEncodedQueryItems?.append(contentsOf: queryItems)
+        return components.url!
     }
 }
