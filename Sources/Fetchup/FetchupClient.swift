@@ -98,7 +98,7 @@ public extension FetchupClient {
         resource.headers.forEach { urlRequest.addValue($0.value, forHTTPHeaderField: $0.key) }
         resource.configure?(&urlRequest)
 
-        return transformForCaching ? configuration.transformCached(urlRequest) : urlRequest
+        return transformForCaching ? configuration.transformingCached(urlRequest) : urlRequest
     }
 }
 
@@ -109,7 +109,7 @@ extension CachedURLResponse {
 
     var entryDate: Date? { userInfo?[Self.entryDateKey] as? Date }
 
-    func withEntryDate(_ date: Date) -> CachedURLResponse {
+    func addingEntryDate(_ date: Date) -> CachedURLResponse {
         var newUserInfo = userInfo ?? [:]
         newUserInfo[Self.entryDateKey] = date
 
