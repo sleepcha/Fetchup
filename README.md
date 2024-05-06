@@ -51,7 +51,7 @@ client.fetchDataTask(resource, cacheMode: .manual) {
 If the response was successful you can retrieve it from cache validating its freshness:
 ```swift
 let noOlderThanYesterday = { (creationDate: Date) in
-    let yesterday = Date.now.addingTimeInterval(-24 * 60 * 60)
+    let yesterday = Date().addingTimeInterval(-24 * 60 * 60)
     return creationDate > yesterday
 }
 
