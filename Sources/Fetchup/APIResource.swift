@@ -29,12 +29,3 @@ public extension APIResource {
     var body: Data? { nil }
     var configure: ((inout URLRequest) -> Void)? { nil }
 }
-
-// MARK: - URL + ExpressibleByStringLiteral
-
-extension URL: ExpressibleByStringLiteral {
-    /// A convenience for using string literals as URLs
-    public init(stringLiteral value: StaticString) {
-        self.init(string: "\(value)")!
-    }
-}
