@@ -5,6 +5,8 @@ public enum FetchupClientError: LocalizedError {
     case invalidHTTPResponse(URLResponse)
     case httpError(Data?, HTTPURLResponse)
     case emptyData(HTTPURLResponse)
+    case networkError(Error)
+    case decodingError(Error)
 
     public var errorDescription: String? {
         switch self {
@@ -13,9 +15,13 @@ public enum FetchupClientError: LocalizedError {
         case let .invalidHTTPResponse(response):
             "Invalid HTTP response\n\(response)"
         case let .httpError(_, response):
-            "HTTP error \(response.statusCode) - "
+            "HTTP error \(response.statusCode)"
         case let .emptyData(response):
             "No data received. HTTP \(response.statusCode)"
+        case let .decodingError(error):
+            "Unable to decode the response: \(error.localizedDescription)"
+        case let .networkError(error):
+            "Network error: \(error.localizedDescription)"
         }
     }
 }

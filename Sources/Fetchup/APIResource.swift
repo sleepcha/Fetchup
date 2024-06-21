@@ -20,7 +20,7 @@ public protocol APIResource {
     ///
     /// The default implementation of the method is for `Decodable` kind of `Response`.
     /// For other types of data you will have to provide your own implementation.
-    func decode(_ data: Data) -> Result<Response, Error>
+    func decode(_ data: Data) -> Result<Response, FetchupClientError>
 }
 
 public extension APIResource {

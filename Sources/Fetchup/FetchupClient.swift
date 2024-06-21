@@ -13,11 +13,11 @@ public extension FetchupClient {
     /// - Parameters:
     ///     - resource: An instance that contains the data for generating a request.
     ///     - completion: A completion handler that passes a model object of type `Response` (associated type declared in `resource`) in case of `.success`.
-    ///     Otherwise `.failure(Error)` is passed.
+    ///     Otherwise `.failure(FetchupClientError)` is passed.
     func fetchDataTask<T: APIResource>(
         _ resource: T,
         cacheMode: CacheMode = .policy,
-        completion: @escaping (Result<T.Response, Error>) -> Void
+        completion: @escaping (Result<T.Response, FetchupClientError>) -> Void
     ) -> URLSessionDataTask {
         let request = generateURLRequest(for: resource)
         let task = session.dataTask(with: request)
@@ -38,7 +38,7 @@ public extension FetchupClient {
     /// - Parameters:
     ///     - resource: An instance that contains the data for generating a request.
     ///     - isValid: A closure that checks whether the cached version has expired, given the creation date of the response.
-    func cached<T: APIResource>(_ resource: T, isValid: (Date) -> Bool) -> Result<T.Response, Error>? {
+    func cached<T: APIResource>(_ resource: T, isValid: (Date) -> Bool) -> Result<T.Response, FetchupClientError>? {
         let request = generateURLRequest(for: resource, transformForCaching: true)
 
         guard let urlCache = session.configuration.urlCache,
@@ -63,25 +63,25 @@ public extension FetchupClient {
         session.configuration.urlCache?.removeCachedResponse(for: request)
     }
 
-    private static func processResponse(data: Data?, response: URLResponse?, error: Error?) -> Result<Data, Error> {
+    private static func processResponse(data: Data?, response: URLResponse?, error: Error?) -> Result<Data, FetchupClientError> {
         if let error {
-            return .failure(error)
+            return .failure(.networkError(error))
         }
 
         guard let response else {
-            return .failure(FetchupClientError.emptyResponse)
+            return .failure(.emptyResponse)
         }
 
         guard let response = response as? HTTPURLResponse else {
-            return .failure(FetchupClientError.invalidHTTPResponse(response))
+            return .failure(.invalidHTTPResponse(response))
         }
 
         guard 200..<300 ~= response.statusCode else {
-            return .failure(FetchupClientError.httpError(data, response))
+            return .failure(.httpError(data, response))
         }
 
         guard let data, !data.isEmpty else {
-            return .failure(FetchupClientError.emptyData(response))
+            return .failure(.emptyData(response))
         }
 
         return .success(data)

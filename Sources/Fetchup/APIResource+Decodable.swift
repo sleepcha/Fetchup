@@ -2,8 +2,8 @@ import Foundation
 
 public extension APIResource where Response: Decodable {
     /// Default implementation for decoding JSON responses
-    func decode(_ data: Data) -> Result<Response, Error> {
-        data.decoded(as: Response.self)
+    func decode(_ data: Data) -> Result<Response, FetchupClientError> {
+        data.decoded(as: Response.self).mapError(FetchupClientError.decodingError)
     }
 }
 
