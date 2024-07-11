@@ -13,14 +13,12 @@ public protocol APIResource {
     var queryParameters: [String: String] { get }
     var headers: [String: String] { get }
     var body: Data? { get }
+
     /// Allows to set some additional `URLRequest` properties (like `timeoutInterval`) before creating a data task.
     var configure: ((inout URLRequest) -> Void)? { get }
 
-    /// Transforms the received data to a specific instance of `Response`.
-    ///
-    /// The default implementation of the method is for `Decodable` kind of `Response`.
-    /// For other types of data you will have to provide your own implementation.
-    func decode(_ data: Data) -> Result<Response, FetchupClientError>
+    /// Decodes the received data into a specific instance of `Response`.
+    var decoder: (Data) -> Result<Response, Error> { get }
 }
 
 public extension APIResource {

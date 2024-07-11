@@ -18,10 +18,10 @@ public enum FetchupClientError: LocalizedError {
             "HTTP error \(response.statusCode)"
         case let .emptyData(response):
             "No data received. HTTP \(response.statusCode)"
-        case let .decodingError(error):
-            "Unable to decode the response: \(error.localizedDescription)"
-        case let .networkError(error):
-            "Network error: \(error.localizedDescription)"
+        case let .decodingError(underlyingError):
+            "Unable to decode the response. \(underlyingError.localizedDescription)"
+        case let .networkError(underlyingError):
+            "Network error: \(underlyingError.localizedDescription)"
         }
     }
 }

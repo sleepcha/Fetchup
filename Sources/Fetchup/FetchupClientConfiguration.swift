@@ -8,7 +8,7 @@ import Foundation
 ///
 /// - `shouldInvalidateExpiredCache` if true, the client will remove the expired cached response in ``FetchupClient/cached(_:isValid:)`` method call. The default value is `true`.
 ///
-/// - `queryUnreservedCharacters` is a set of characters that will not be percent-encoded in URL query parameters. The set described in RFC 3986 section 2.3 is used as a default.
+/// - `queryUnreservedCharacters` is a set of characters that will not be percent-encoded in URL query parameters. `CharacterSet.urlQueryAllowed` is used as the default.
 ///
 /// - `transformCachedRequest` gives you the opportunity to modify each request before caching it.
 /// For example, remove/obfuscate headers containing private data, modify the HTTP method or the URL.
@@ -23,20 +23,12 @@ public struct FetchupClientConfiguration {
     public init(
         baseURL: URL? = nil,
         shouldInvalidateExpiredCache: Bool = true,
-        queryUnreservedCharacters: CharacterSet = .rfc3986Allowed,
+        allowedCharacters: CharacterSet = .urlQueryAllowed,
         transformCachedRequest: @escaping (URLRequest) -> URLRequest = { $0 }
     ) {
         self.baseURL = baseURL
         self.shouldInvalidateExpiredCache = shouldInvalidateExpiredCache
-        self.allowedCharacters = queryUnreservedCharacters
+        self.allowedCharacters = allowedCharacters
         self.transformingCached = transformCachedRequest
-    }
-}
-
-public extension CharacterSet {
-    static var rfc3986Allowed: CharacterSet {
-        var charset = CharacterSet.alphanumerics
-        charset.insert(charactersIn: "-._~")
-        return charset
     }
 }

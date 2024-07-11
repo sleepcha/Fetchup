@@ -54,6 +54,7 @@ public extension FetchupClient {
             }
             return nil
         }
+
         return resource.decode(response.data)
     }
 
@@ -88,9 +89,13 @@ public extension FetchupClient {
     }
 
     private func generateURLRequest(for resource: some APIResource, transformForCaching: Bool = false) -> URLRequest {
-        let url = resource.path
-            .relative(to: configuration.baseURL)
-            .appending(resource.queryParameters, notEncoding: configuration.allowedCharacters)
+        let url = URL(
+            string: resource.path.absoluteString,
+            relativeTo: configuration.baseURL
+        )!.appending(
+            resource.queryParameters,
+            notEncoding: configuration.allowedCharacters
+        )
 
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = resource.method.rawValue
@@ -102,20 +107,8 @@ public extension FetchupClient {
     }
 }
 
-extension CachedURLResponse {
-    private static let entryDateKey = "entryDate"
-
-    var entryDate: Date? { userInfo?[Self.entryDateKey] as? Date }
-
-    func addingEntryDate(_ date: Date) -> CachedURLResponse {
-        var newUserInfo = userInfo ?? [:]
-        newUserInfo[Self.entryDateKey] = date
-
-        return CachedURLResponse(
-            response: response,
-            data: data,
-            userInfo: newUserInfo,
-            storagePolicy: storagePolicy
-        )
+private extension APIResource {
+    func decode(_ data: Data) -> Result<Response, FetchupClientError> {
+        decoder(data).mapError(FetchupClientError.decodingError)
     }
 }
