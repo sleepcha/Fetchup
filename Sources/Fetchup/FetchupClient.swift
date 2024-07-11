@@ -54,6 +54,7 @@ public extension FetchupClient {
             }
             return nil
         }
+
         return resource.decode(response.data)
     }
 
@@ -88,9 +89,13 @@ public extension FetchupClient {
     }
 
     private func generateURLRequest(for resource: some APIResource, transformForCaching: Bool = false) -> URLRequest {
-        let url = resource.path
-            .relative(to: configuration.baseURL)
-            .appending(resource.queryParameters, notEncoding: configuration.allowedCharacters)
+        let url = URL(
+            string: resource.path.absoluteString,
+            relativeTo: configuration.baseURL
+        )!.appending(
+            resource.queryParameters,
+            notEncoding: configuration.allowedCharacters
+        )
 
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = resource.method.rawValue
@@ -102,20 +107,25 @@ public extension FetchupClient {
     }
 }
 
-extension CachedURLResponse {
-    private static let entryDateKey = "entryDate"
+// MARK: - Extensions
 
-    var entryDate: Date? { userInfo?[Self.entryDateKey] as? Date }
+private extension URL {
+    func appending(_ queryParameters: [String: String], notEncoding allowedCharacters: CharacterSet) -> URL {
+        guard !queryParameters.isEmpty else { return self }
 
-    func addingEntryDate(_ date: Date) -> CachedURLResponse {
-        var newUserInfo = userInfo ?? [:]
-        newUserInfo[Self.entryDateKey] = date
+        let queryItems = queryParameters
+            .mapValues { $0.addingPercentEncoding(withAllowedCharacters: allowedCharacters) }
+            .map(URLQueryItem.init)
 
-        return CachedURLResponse(
-            response: response,
-            data: data,
-            userInfo: newUserInfo,
-            storagePolicy: storagePolicy
-        )
+        var components = URLComponents(url: self, resolvingAgainstBaseURL: true)!
+        components.percentEncodedQueryItems = components.percentEncodedQueryItems ?? []
+        components.percentEncodedQueryItems?.append(contentsOf: queryItems)
+        return components.url!
+    }
+}
+
+private extension APIResource {
+    func decode(_ data: Data) -> Result<Response, FetchupClientError> {
+        decoder(data).mapError(FetchupClientError.decodingError)
     }
 }
