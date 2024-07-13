@@ -18,7 +18,7 @@ public protocol APIResource {
     var configure: ((inout URLRequest) -> Void)? { get }
 
     /// Decodes the received data into a specific instance of `Response`.
-    var decoder: (Data) -> Result<Response, Error> { get }
+    func decode(_ data: Data) -> Result<Response, Error>
 }
 
 public extension APIResource {
