@@ -24,7 +24,7 @@ public extension FetchupClient {
 
         task.delegate = FetchupClientTaskDelegate(configuration, cacheMode: cacheMode) {
             let result = Self.processResponse(data: $0, response: $1, error: $2)
-            completion(result.flatMap(resource.decode))
+            completion(result.flatMap(resource.decodeMappingError))
         }
 
         return task
@@ -55,7 +55,7 @@ public extension FetchupClient {
             return nil
         }
 
-        return resource.decode(response.data)
+        return resource.decodeMappingError(response.data)
     }
 
     /// Removes a cached entry if there is one.
@@ -108,7 +108,7 @@ public extension FetchupClient {
 }
 
 private extension APIResource {
-    func decode(_ data: Data) -> Result<Response, FetchupClientError> {
-        decoder(data).mapError(FetchupClientError.decodingError)
+    func decodeMappingError(_ data: Data) -> Result<Response, FetchupClientError> {
+        decode(data).mapError(FetchupClientError.decodingError)
     }
 }

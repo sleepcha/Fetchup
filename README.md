@@ -6,8 +6,11 @@ A simple Swift REST API client with an option of manual caching using `URLCache`
 
 Create your own client by conforming to `FetchupClient`:
 ```swift
+import Fetchup
+
 class SomeAPIClient: FetchupClient {
-    let configuration = FetchupClientConfiguration(baseURL: "https://someserver.com/rest")
+    static let baseURL = URL(string: "https://someserver.com/rest")!
+    let configuration = FetchupClientConfiguration(baseURL: baseURL)
     let session = URLSession.shared
 }
 ```
@@ -18,11 +21,15 @@ Define a resource describing the endpoint and `Decodable` type for JSON response
 struct FindBooks: APIResource {
     typealias Response = [Book]
     let method: HTTPMethod = .get
-    let endpoint: URL = "/library/books"
+    let path: URL = URL(string: "/library/books")!
     let queryParameters: [String: String]
     
     init(writtenBy authorName: String) {
         queryParameters = ["author": authorName]
+    }
+    
+    func decode(_ data: Data) -> Result<Response, Error> {
+        Result { try JSONDecoder().decode(Response.self, from: data) }
     }
 }
 
