@@ -1,6 +1,8 @@
 import Foundation
 
 public enum FetchupClientError: LocalizedError {
+    case cacheMiss
+    case cacheExpired
     case emptyResponse
     case invalidHTTPResponse(URLResponse)
     case httpError(Data?, HTTPURLResponse)
@@ -10,6 +12,10 @@ public enum FetchupClientError: LocalizedError {
 
     public var errorDescription: String? {
         switch self {
+        case .cacheMiss:
+            "The requested item was not found in the cache."
+        case .cacheExpired:
+            "The cached item has expired and is no longer valid."
         case .emptyResponse:
             "Empty URL response"
         case let .invalidHTTPResponse(response):

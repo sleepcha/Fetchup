@@ -23,7 +23,7 @@ public extension FetchupClient {
         let task = session.dataTask(with: request)
 
         task.delegate = FetchupClientTaskDelegate(configuration, cacheMode: cacheMode) {
-            let result = Self.processResponse(data: $0, response: $1, error: $2)
+            let result = processResponse(data: $0, response: $1, error: $2)
             completion(result.flatMap(resource.decodeMappingError))
         }
 
@@ -31,28 +31,28 @@ public extension FetchupClient {
     }
 
     /// Returns a cached version of the resource.
-    /// Returns `nil` if there is no entry, if it has exipred, or `cacheMode` was not set to `.manual` in `fetchDataTask`.
+    /// In case of failure `.cacheMiss`, `.cacheExpired` or `.decodingError` will be returned.
     ///
     /// If `shouldInvalidateExpiredCache` is set to true, expired responses will be automatically removed.
     ///
     /// - Parameters:
     ///     - resource: An instance that contains the data for generating a request.
     ///     - isValid: A closure that checks whether the cached version has expired, given the creation date of the response.
-    func cached<T: APIResource>(_ resource: T, isValid: (Date) -> Bool) -> Result<T.Response, FetchupClientError>? {
+    func cached<T: APIResource>(_ resource: T, isValid: (Date) -> Bool) -> Result<T.Response, FetchupClientError> {
         let request = generateURLRequest(for: resource, transformForCaching: true)
 
         guard let urlCache = session.configuration.urlCache,
               let response = urlCache.cachedResponse(for: request),
               let entryDate = response.entryDate
         else {
-            return nil
+            return .failure(.cacheMiss)
         }
 
         guard isValid(entryDate) else {
             if configuration.shouldInvalidateExpiredCache {
                 urlCache.removeCachedResponse(for: request)
             }
-            return nil
+            return .failure(.cacheExpired)
         }
 
         return resource.decodeMappingError(response.data)
@@ -62,30 +62,6 @@ public extension FetchupClient {
     func removeCached(_ resource: some APIResource) {
         let request = generateURLRequest(for: resource, transformForCaching: true)
         session.configuration.urlCache?.removeCachedResponse(for: request)
-    }
-
-    private static func processResponse(data: Data?, response: URLResponse?, error: Error?) -> Result<Data, FetchupClientError> {
-        if let error {
-            return .failure(.networkError(error))
-        }
-
-        guard let response else {
-            return .failure(.emptyResponse)
-        }
-
-        guard let response = response as? HTTPURLResponse else {
-            return .failure(.invalidHTTPResponse(response))
-        }
-
-        guard 200..<300 ~= response.statusCode else {
-            return .failure(.httpError(data, response))
-        }
-
-        guard let data, !data.isEmpty else {
-            return .failure(.emptyData(response))
-        }
-
-        return .success(data)
     }
 
     private func generateURLRequest(for resource: some APIResource, transformForCaching: Bool = false) -> URLRequest {
