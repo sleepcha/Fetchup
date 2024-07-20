@@ -1,5 +1,3 @@
-import Foundation
-
 public enum CacheMode {
     /// Use the default caching mechanism with the policy set in `URLSessionConfiguration`
     case policy

@@ -33,7 +33,7 @@ extension CachedURLResponse {
     }
 }
 
-func processResponse(data: Data?, response: URLResponse?, error: Error?) -> Result<Data, FetchupClientError> {
+func processResponse(data: Data?, response: URLResponse?, error: Error?) -> Result<Data, FetchError> {
     if let error {
         return .failure(.networkError(error))
     }
