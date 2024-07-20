@@ -5,7 +5,7 @@ public extension FetchupClient {
     ///
     /// - Parameters:
     ///     - resource: An instance that contains the data for generating a request.
-    ///     - cacheMode:
+    ///     - cacheMode: Specifies the way responses will be cached.
     ///     - completion: A completion handler that passes a model object of type `Response` (associated type declared in `resource`) in case of `.success`.
     ///     Otherwise `.failure(FetchupClientError)` is passed.
     func fetchDataTask<T: APIResource>(
