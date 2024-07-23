@@ -9,7 +9,7 @@ Create your own client by conforming to `FetchupClient`:
 import Fetchup
 
 class SomeAPIClient: FetchupClient {
-    static let baseURL = URL(string: "https://someserver.com/rest")!
+    static let baseURL = URL(string: "https://someserver.com/rest/")!
     let configuration = FetchupClientConfiguration(baseURL: baseURL)
     let session = URLSession.shared
 }
@@ -21,7 +21,7 @@ Define a resource describing the endpoint and `Decodable` type for JSON response
 struct FindBooks: APIResource {
     typealias Response = [Book]
     let method: HTTPMethod = .get
-    let path: URL = URL(string: "/library/books")!
+    let path: URL = URL(string: "library/books")!
     let queryParameters: [String: String]
     
     init(writtenBy authorName: String) {
