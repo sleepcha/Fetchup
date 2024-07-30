@@ -12,15 +12,15 @@ public enum FetchError: LocalizedError {
         switch self {
         case .emptyResponse:
             "Empty URL response"
-        case let .invalidHTTPResponse(response):
+        case .invalidHTTPResponse(let response):
             "Invalid HTTP response\n\(response)"
-        case let .httpError(_, response):
+        case .httpError(_, let response):
             "HTTP error \(response.statusCode)"
-        case let .emptyData(response):
+        case .emptyData(let response):
             "No data received. HTTP \(response.statusCode)"
-        case let .decodingError(underlyingError):
+        case .decodingError(let underlyingError):
             "Unable to decode the response. \(underlyingError.localizedDescription)"
-        case let .networkError(underlyingError):
+        case .networkError(let underlyingError):
             "Network error: \(underlyingError.localizedDescription)"
         }
     }

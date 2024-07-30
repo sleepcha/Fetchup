@@ -11,7 +11,7 @@ public enum CacheError: LocalizedError {
             "The requested item was not found in the cache."
         case .cacheExpired:
             "The cached item has expired and is no longer valid."
-        case let .decodingError(underlyingError):
+        case .decodingError(let underlyingError):
             "Unable to decode the response. \(underlyingError.localizedDescription)"
         }
     }
