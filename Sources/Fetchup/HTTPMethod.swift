@@ -13,7 +13,7 @@ public enum HTTPMethod {
         case .options: "OPTIONS"
         case .trace: "TRACE"
         case .connect: "CONNECT"
-        case .custom(let method): method
+        case .custom(let method): method.uppercased()
         }
     }
 }
